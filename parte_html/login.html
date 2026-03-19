@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box{
+    background: white;
+    padding: 100px 80px;
+    border-radius: 10px;
+    width: 300px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+.login-box h2{
+    margin-bottom: 20px;
+}
+
+.input-box{
+    margin-bottom: 15px;
+}
+
+.input-box input{
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button{
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: #4facfe;
+    color: white;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover{
+    background: #3b8de3;
+}
+
+a{
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+    text-decoration: none;
+    color: #4facfe;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="login-box">
+    <h2>Login</h2>
+
+    <form method="POST">
+        <div class="input-box">
+            <input type="email" placeholder="Email" required id="email">
+        </div>
+
+        <div class="input-box">
+            <input type="password" placeholder="Senha" required id="senha">
+        </div>
+
+        <button type="submit" id="btn_login">Entrar</button>
+        <a href="http://localhost:3000/users">teste</a>
+    </form>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
