@@ -17,7 +17,7 @@ server.listen(3333)
 import express from "express"
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import jsonwebtoken from "jsonwebtoken"
+import jsonwebtoken from "jsonwebtoken" 
 import 'dotenv/config'
 import User from './models/User.js';
 
@@ -121,6 +121,37 @@ app.post("/login", async (req, res) =>{
     }
 })
 
+function checkToken(req, res, next){
+        const authHeader = req.headers['authorization'] //Pegando o token do header da requisição
+        const token = authHeader && authHeader.split(' ')[1] //Pegando o token, que é a segunda parte do header (o header tem o formato "Bearer token")
+
+        if (!token){
+            return res.status(401).json({msg: 'Acesso negado'}) //Se não tiver token, retorna acesso negado
+        }
+        try{//Se tiver token, vai tentar verificar o token
+            const secret = process.env.SECRET //Pegando a chave secreta do arquivo .env para verificar o token
+            jsonwebtoken.verify(token, secret) //Verificando o token, passando o token e a chave secreta para o jsonwebtoken. Se o token for válido, a função retorna true, caso contrário, retorna false
+            next() //Se o token for válido, continua para a próxima função (que é a função que retorna os dados do usuário)
+        }
+        catch(er){
+            res.status(400).json({msg: 'Token inválido'}) //Se o token for inválido, retorna token inválido
+        }
+}
+
+//Criando uma rota protegida, ou seja, que só pode ser acessada por usuários autenticados
+app.get("/user/:id", checkToken, async (req, res) =>{
+    const id = req.params.id //Pegando o id do usuário que está tentando acessar a rota protegida
+    
+    //Checar se o usuário existe
+    const user = await User.findById(id, '-senha')//Procurando o usuário pelo id, mas excluindo a senha
+
+    if (!user){
+        return res.status(404).json({msg: 'Usuário não encontrado'}) 
+    }
+    else{
+        res.status(200).json({user})//Retornando os dados do usuário para o cliente, sem a senha
+    }
+})
 app.use(express.static("parte_html"));
 
 
