@@ -26,7 +26,6 @@ const app = express();
 
 app.use(express.json())//permite ler arquivos .json
 app.use(express.urlencoded({ extended: true }));//permite ler dados de formulários html
-app.use(express.static("parte_html"));
 
 const port = 3000 
 const dbUser = process.env.DB_USER
@@ -41,10 +40,10 @@ app.listen(3000, () => {
 
 //Criando rostas(ending points)
 app.get("/", (req, res) =>{
-    res.json({nome, email, senha, confirmsenha});
+    res.json({msg: "Bem-vindo à API"})
 })
 
-app.post("/login", async (req, res) =>{
+app.post("/registrar", async (req, res) =>{
     const {nome, email, senha, confirmsenha} = req.body
 
     //Validação dos dados
@@ -65,13 +64,13 @@ app.post("/login", async (req, res) =>{
 
     //Criando uma senha com digitos a mais na senha que o usuário digitou (nesse caso 12 dígitos aleatórios a mais)
     const salt = await bcrypt.genSalt(12)
-    const senhahash = await bcrypt.hash(senha, salt)
+    const senhahash = await bcrypt.hash(senha, salt)// Gerando a senha criptografada, passando a senha e o salt para o bcrypt. O resultado é a senha criptografada, que é o que vai ser salvo no banco de dados
 
     //Criar usuário
-    const user = new User({
+    const user = new User({// Criando um novo usuário, passando os dados para o banco de dados
         nome,
         email, 
-        senha: senhahash,
+        senha: senhahash //Quando o nome da variável é igual ao tipo, não precisa colocar o nome do campo, mas como a senha tem um nome diferente, tem que colocar o tipo
     })
 
     try{
@@ -86,6 +85,43 @@ app.post("/login", async (req, res) =>{
     
 })
 
+app.post("/login", async (req, res) =>{
+    const {email, senha} = req.body
+
+    if(!email || !senha){
+        return res.status(422).json({mgs: "Coloque os dados obrigatórios"}) 
+    }
+
+    //Checar se o usuário existe
+    const user = await User.findOne({email: email})
+
+    if (!user){
+        return res.status(422).json({msg: 'Usuário não encontrado'}) 
+    }
+
+    //Checar se a senha é correta
+    const checksenha = await bcrypt.compare(senha, user.senha)
+
+    if (!checksenha){
+        return res.status(422).json({msg: 'Senha inválida'}) 
+    }
+
+    try{
+        const secret = process.env.SECRET //Pegando a chave secreta do arquivo .env para gerar o token, que é o que vai ser retornado para o usuário
+        const token = jsonwebtoken.sign( //Gerando o token, passando o id do usuário e a chave secreta para o jsonwebtoken. O resultado é o token, que é o que vai ser retornado para o usuário
+            {
+                id: user._id
+            },
+            secret,
+        )
+        res.status(200).json({msg:'Autenticação realizada com sucesso', token})//Retornando o token e os dados do usuário para o cliente
+    }
+    catch(er){
+        res.status(500).json({msg: 'Erro no servidor'})
+    }
+})
+
+app.use(express.static("parte_html"));
 
 
 
